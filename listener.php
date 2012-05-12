@@ -64,7 +64,7 @@ $query = mysql_query("SELECT * FROM planets WHERE galaxy='$galaxy' AND system='$
 					$hephdoupdate = 3600;
 				}
 			//ONLY UPDATE HEPH ONCE PER HOUR IF ITS IN THE SAME SPOT
-			if ($doupdate >= 3600) {
+			if ($hephdoupdate >= 3600) {
 				mysql_query("INSERT INTO heph_tracker (galaxy, system, slot, player, planet, timeupdated) VALUES ('{$data['galaxy']}', '{$data['system']}', '{$data['slot']}', '{$data['player']}', '{$data['planet']}', {$data['timeupdated']})");
 				echo $data['slot']." - Add the Heph to the Heph Tracker instead of the planet tracker!<br />";
 			} else { 
