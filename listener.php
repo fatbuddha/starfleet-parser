@@ -9,6 +9,7 @@ mysql_select_db($db_name, $con);
 $galaxy = mysql_real_escape_string($_GET['g']);
 $system = mysql_real_escape_string($_GET['s']);
 $timedate = mysql_real_escape_string($_GET['t']);
+$delete = mysql_real_escape_string($_GET['d']);
 
 //SET OTHER VARIABLES WE'll NEED
 date_default_timezone_set('UTC');
@@ -29,7 +30,9 @@ if (mysql_num_rows($updatecheck) > 0) {
 if ($doupdate >= 900) {
 
 //DELETE OLD SYSTEM ENTRIES
+if ($delete = 1){
 mysql_query("DELETE FROM planets WHERE galaxy='$galaxy' AND system='$system'");
+}
 
 //BUILD STRINGS AND SUBMIT NEW ENTRIES
 	for ($i = 1; $i <=45; $i++) {

@@ -6,11 +6,12 @@
 // ==/UserScript==
 
 
-if (document.location.href.match(/http:\/\/stardriftempires\.com\/galaxy|http:\/\/fb\.stardriftempires\.com\/galaxy|http:\/\/apps\.facebook\.com\/stardrift_empires\/galaxy/i)!=null) {
-	var path_to_upload = "http://PATH_TO_FILE/listener.php";
+ if (/stardrift.+\/galaxy/i.test(document.location.href)) {
+	var path_to_upload = "http://PATH_TO_FILE/sdetest/listener.php";
  var timedate = Math.round(+new Date()/1000);
  var playername;
  var string1="";
+ var string2="";
  var vTRs=document.getElementById('planets').getElementsByTagName('tr');
  var galaxy=document.getElementById('galaxy').getAttribute('value');
  var system=document.getElementById('solar_system').getAttribute('value');
@@ -88,6 +89,7 @@ if (document.location.href.match(/http:\/\/stardriftempires\.com\/galaxy|http:\/
     } else {
      var alliance=''; 
     }
+	if(string1.length < 1500){
 	string1+="&v"+y+""+z+"="+slot+"&";
 	z++;
 	string1+="v"+y+""+z+"="+htmlDecode(playername)+"&";
@@ -101,25 +103,57 @@ if (document.location.href.match(/http:\/\/stardriftempires\.com\/galaxy|http:\/
 	string1+="v"+y+""+z+"="+htmlDecode(planetName)+"&";
 	z++;
 	string1+="v"+y+""+z+"="+planetActivity;
-    } else {
+	} 
+	else {
+	string2+="&v"+y+""+z+"="+slot+"&";
+	z++;
+	string2+="v"+y+""+z+"="+htmlDecode(playername)+"&";
+	z++;
+	string2+="v"+y+""+z+"="+statsymbol+"&";
+	z++;
+	string2+="v"+y+""+z+"="+htmlDecode(alliance)+"&";
+	z++;
+	string2+="v"+y+""+z+"="+rank+"&";
+	z++;
+	string2+="v"+y+""+z+"="+htmlDecode(planetName)+"&";
+	z++;
+	string2+="v"+y+""+z+"="+planetActivity;
+	}
+    } 
+	else {
     var planetName=GetClassItem(vTRs[i],'td','name').innerHTML.replace(/^\s+|\s+$/g, "");
     var slot=vTRs[i].getAttribute('id').substr(7);
     if (planetName=="Unavailable") { 
-	string1+="&v"+y+""+z+"="+slot+"&";
-	z++;
-	string1+="v"+y+""+z+"=&";
-	z++;
-	string1+="v"+y+""+z+"=&";
-	z++;
-	string1+="v"+y+""+z+"=&";
-	z++;
-	string1+="v"+y+""+z+"=";
-	z++;
-	string1+="v"+y+""+z+"=&";
-	z++;
-	string1+="v"+y+""+z+"=";
+		if(string1.length < 1500){
+			string1+="&v"+y+""+z+"="+slot+"&";
+			z++;
+			string1+="v"+y+""+z+"=&";
+			z++;
+			string1+="v"+y+""+z+"=&";
+			z++;
+			string1+="v"+y+""+z+"=&";
+			z++;
+			string1+="v"+y+""+z+"=&";
+			z++;
+			string1+="v"+y+""+z+"=&";
+			z++;
+			string1+="v"+y+""+z+"=";}
+		else {
+			string2+="&v"+y+""+z+"="+slot+"&";
+			z++;
+			string2+="v"+y+""+z+"=&";
+			z++;
+			string2+="v"+y+""+z+"=&";
+			z++;
+			string2+="v"+y+""+z+"=&";
+			z++;
+			string2+="v"+y+""+z+"=&";
+			z++;
+			string2+="v"+y+""+z+"=&";
+			z++;
+			string2+="v"+y+""+z+"=";}
 	}
-   }
+	}
   }
   y++;
   z="1";
@@ -128,8 +162,15 @@ if (document.location.href.match(/http:\/\/stardriftempires\.com\/galaxy|http:\/
  if (string1.length>0) { string1=string1.substr(0,string1.length-1)+';'; }
  
  EmailWindowTimeout = 60000;
- var urlstring = path_to_upload + "?g=" + galaxy + "&s=" + system + "&t=" +timedate + string1.replace(/,undefined/,"");
- console.log('uploaded: '+urlstring);
+ var urlstring1 = path_to_upload + "?d=1&g=" + galaxy + "&s=" + system + "&t=" +timedate + string1.replace(/,undefined/,"");
+ var urlstring2 = path_to_upload + "?d=0&g=" + galaxy + "&s=" + system + "&t=" +timedate + string2.replace(/,undefined/,"");
+if(string1.length < 1500){
+		console.log('uploaded: '+urlstring1);
+} else {
+		console.log('uploaded: '+urlstring1);
+		console.log('uploaded: '+urlstring2);
+} 
+ 
 
  var req = false;
  if (window.XMLHttpRequest) {
@@ -138,7 +179,12 @@ if (document.location.href.match(/http:\/\/stardriftempires\.com\/galaxy|http:\/
   alert('no window.xmlhttprequest');
  }
  if (req) {
-  req.open('GET', urlstring, false);
+	if(string1.length < 1500){
+		req.open('GET', urlstring1, false);
+	} else {
+		req.open('GET', urlstring1, false);
+		req.open('GET', urlstring2, false);
+	}
   GetClassItem(document.getElementById('content'),'div','description').innerHTML+=' PARSED.';
   req.send();
  } else {    alert('Sorry, your browser does not support XMLHTTPRequest objects.');  }
