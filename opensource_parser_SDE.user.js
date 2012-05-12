@@ -7,13 +7,15 @@
 
 
 if (document.location.href.match(/http:\/\/stardriftempires\.com\/galaxy|http:\/\/fb\.stardriftempires\.com\/galaxy|http:\/\/apps\.facebook\.com\/stardrift_empires\/galaxy/i)!=null) {
-	var path_to_upload = "http://ENTER_PATH_TO_UPLOAD/listener.php";
+	var path_to_upload = "http://PATH_TO_FILE/listener.php";
  var timedate = Math.round(+new Date()/1000);
  var playername;
  var string1="";
  var vTRs=document.getElementById('planets').getElementsByTagName('tr');
  var galaxy=document.getElementById('galaxy').getAttribute('value');
  var system=document.getElementById('solar_system').getAttribute('value');
+ var y = "1";
+ var z = "1";
  for (i=1;i<vTRs.length;i++) {
   var vPlayer=GetClassItem(vTRs[i],'td','player');
   if (vPlayer!=null) { 
@@ -86,19 +88,47 @@ if (document.location.href.match(/http:\/\/stardriftempires\.com\/galaxy|http:\/
     } else {
      var alliance=''; 
     }
-    string1+="('"+galaxy+"','"+system+"','"+slot+"','"+htmlDecode(playername)+"','"+statsymbol+"','"+htmlDecode(alliance)+"','"+timedate+"','"+rank+"','"+htmlDecode(planetName)+"','"+planetActivity+"'),";
-   } else {
+	string1+="&v"+y+""+z+"="+slot+"&";
+	z++;
+	string1+="v"+y+""+z+"="+htmlDecode(playername)+"&";
+	z++;
+	string1+="v"+y+""+z+"="+statsymbol+"&";
+	z++;
+	string1+="v"+y+""+z+"="+htmlDecode(alliance)+"&";
+	z++;
+	string1+="v"+y+""+z+"="+rank+"&";
+	z++;
+	string1+="v"+y+""+z+"="+htmlDecode(planetName)+"&";
+	z++;
+	string1+="v"+y+""+z+"="+planetActivity;
+    } else {
     var planetName=GetClassItem(vTRs[i],'td','name').innerHTML.replace(/^\s+|\s+$/g, "");
     var slot=vTRs[i].getAttribute('id').substr(7);
-    if (planetName=="Unavailable") { string1+="('"+galaxy+"','"+system+"','"+slot+"','Unavailable','','','"+timedate+"','','),"; }
+    if (planetName=="Unavailable") { 
+	string1+="&v"+y+""+z+"="+slot+"&";
+	z++;
+	string1+="v"+y+""+z+"=&";
+	z++;
+	string1+="v"+y+""+z+"=&";
+	z++;
+	string1+="v"+y+""+z+"=&";
+	z++;
+	string1+="v"+y+""+z+"=";
+	z++;
+	string1+="v"+y+""+z+"=&";
+	z++;
+	string1+="v"+y+""+z+"=";
+	}
    }
   }
+  y++;
+  z="1";
  }
 
  if (string1.length>0) { string1=string1.substr(0,string1.length-1)+';'; }
  
  EmailWindowTimeout = 60000;
- var urlstring = path_to_upload + "?string=" + string1.replace(/,undefined/,";") + "&galaxy=" + galaxy + "&system=" + system +"";
+ var urlstring = path_to_upload + "?g=" + galaxy + "&s=" + system + "&t=" +timedate + string1.replace(/,undefined/,"");
  console.log('uploaded: '+urlstring);
 
  var req = false;
