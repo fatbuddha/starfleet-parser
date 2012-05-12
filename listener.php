@@ -47,33 +47,58 @@ mysql_query("DELETE FROM planets WHERE galaxy='$galaxy' AND system='$system'");
 	}
 
 //UPDATE PLANET TRACKER
-$query = mysql_query("SELECT galaxy, system, slot, planetactivity FROM planets WHERE galaxy='$galaxy' AND system='$system'");
+$query = mysql_query("SELECT * FROM planets WHERE galaxy='$galaxy' AND system='$system'");
 	while($data = mysql_fetch_assoc($query)){
+		//ENCOUNTERS ARE NOT TRACKED IN THE PLANET TRACKER
 		if (preg_match('[e]', $data['slot'])) {
-			echo "You sent parsed Encounters, but they are not included in the planet tracker!";
-		} else { 
+			echo $data['slot']." - You sent an encounter, but they are not included in the planet tracker!";
+		} 
+		//HEPHS ARE TRACKED IN HEPH TRACKER, NOT PLANET TRACKER
+		elseif (preg_match('[h]', $data['slot'])) {
+			$hephupdate = mysql_query("SELECT timeupdated FROM heph_tracker WHERE galaxy='$galaxy' AND system='$system' AND slot='{$data['slot']}' AND player='{$data['player']}' ORDER BY timeupdated DESC LIMIT 1");
+				if (mysql_num_rows($hephupdate) > 0) {
+					$hephtmp = mysql_fetch_array($hephupdate) or die("Couldn't fetch time array!");
+					$hephlastupdate = $hephtmp['timeupdated'];
+					$hephdoupdate = ($timedate - $hephlastupdate);
+				} else {
+					$hephdoupdate = 3600;
+				}
+			//ONLY UPDATE HEPH ONCE PER HOUR IF ITS IN THE SAME SPOT
+			if ($doupdate >= 3600) {
+				mysql_query("INSERT INTO heph_tracker (galaxy, system, slot, player, planet, timeupdated) VALUES ('{$data['galaxy']}', '{$data['system']}', '{$data['slot']}', '{$data['player']}', '{$data['planet']}', {$data['timeupdated']})");
+				echo $data['slot']." - Add the Heph to the Heph Tracker instead of the planet tracker!<br />";
+			} else { 
+				echo $data['slot']." - We only add Heph tracking once per hour unless it moves!<br />";
+			}
+		} 
+		//FINALLY ADD THE PLANETS TO THE PLANET TRACKER
+		else { 
+			//(*) PLANETS ARE WORTH +10
 			if ($data['planetactivity'] === "(*)") {
 				mysql_query("UPDATE planets_activity SET ".$hour_ts." = ".$hour_ts." + 1, `".$hour."` = `".$hour."` + 10 WHERE galaxy='$galaxy' AND system='$system' AND slot='{$data['slot']}' AND player='{$data['player']}'");
 				if (mysql_affected_rows()==0) {
 				mysql_query("INSERT INTO planets_activity (galaxy, system, slot, player, `".$hour."`, ".$hour_ts.") VALUES ('$galaxy', '$system', '{$data['slot']}', '{$data['player']}', 10, 1)"); 
 			}
-		echo $data['slot']." - Updated (*)'s in the tracker!";	
+		echo $data['slot']." - Updated (*)'s in the tracker!<br />";	
 		}
-		elseif ($data['planetactivity'] !== "(*)" && $data['planetactivity'] !== "") {
-			mysql_query("UPDATE planets_activity SET ".$hour_ts." = ".$hour_ts." + 1, `".$hour."` = `".$hour."` + 5 WHERE galaxy='$galaxy' AND system='$system' AND slot='{$data['slot']}' AND player='{$data['player']}'");
-			if (mysql_affected_rows()==0) {
-			mysql_query("INSERT INTO planets_activity (galaxy, system, slot, player, `".$hour."`, ".$hour_ts.") VALUES ('$galaxy', '$system', '{$data['slot']}', '{$data['player']}', 5, 1)");
+			//PLANETS ON TIMERS ARE WORTH +5
+			elseif ($data['planetactivity'] !== "(*)" && $data['planetactivity'] !== "") {
+				mysql_query("UPDATE planets_activity SET ".$hour_ts." = ".$hour_ts." + 1, `".$hour."` = `".$hour."` + 5 WHERE galaxy='$galaxy' AND system='$system' AND slot='{$data['slot']}' AND player='{$data['player']}'");
+				if (mysql_affected_rows()==0) {
+				mysql_query("INSERT INTO planets_activity (galaxy, system, slot, player, `".$hour."`, ".$hour_ts.") VALUES ('$galaxy', '$system', '{$data['slot']}', '{$data['player']}', 5, 1)");
 			}
-		echo $data['slot']." - Updated timers in the tracker!";
-		} else {
-			mysql_query("UPDATE planets_activity SET ".$hour_ts." = ".$hour_ts." + 1, `".$hour."` = `".$hour."` + 1 WHERE galaxy='$galaxy' AND system='$system' AND slot='{$data['slot']}' AND player='{$data['player']}'") or die(mysql_error());
-			if (mysql_affected_rows()==0) {
-			mysql_query("INSERT INTO planets_activity (galaxy, system, slot, player, `".$hour."`, ".$hour_ts.") VALUES ('$galaxy', '$system', '{$data['slot']}', '{$data['player']}', 1, 1)")  or die(mysql_error());
+		echo $data['slot']." - Updated timers in the tracker!<br />";
+		} 
+			//PLANETS SEEM WITH NO TIMERS AND NO (*) ARE WORTH +1
+			else {
+				mysql_query("UPDATE planets_activity SET ".$hour_ts." = ".$hour_ts." + 1, `".$hour."` = `".$hour."` + 1 WHERE galaxy='$galaxy' AND system='$system' AND slot='{$data['slot']}' AND player='{$data['player']}'") or die(mysql_error());
+				if (mysql_affected_rows()==0) {
+				mysql_query("INSERT INTO planets_activity (galaxy, system, slot, player, `".$hour."`, ".$hour_ts.") VALUES ('$galaxy', '$system', '{$data['slot']}', '{$data['player']}', 1, 1)")  or die(mysql_error());
 			}
-		echo $data['slot']." - Updated other planets in the tracker!";
+		echo $data['slot']." - Updated other planets in the tracker!<br />";
+		}
 		}
 	}
-}
 echo "UPDATE END";
 } else { 
 echo "NO UPDATE NEEDED";
