@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name          OpenSource Galaxy Parser
-// @description   Autoupload every galaxy screen you see. Thanks to Lytjohan and Eljer for letting me base this off their userscripts.
+// @description   Autoupload every galaxy screen you see. Thanks to Lytjohan and Eljer for letting me base this off their userscripts and Rob for help in writing more compressed code!
 // @include       http://*stardriftempires.com/galaxy*
 // @include       http://*playstarfleet.com/galaxy*
 // @include       http://*playstarfleetextreme.com/galaxy*
@@ -33,6 +33,11 @@ if (/http:\/\/uni2\.playstarfleetextreme\.com\/galaxy/i.test(document.location.h
 	var active=1;
 }
 
+if (/http:\/\/nova\.playstarfleetextreme\.com\/galaxy/i.test(document.location.href)) {
+	var path_to_upload = "http://PATH_TO_UPLOAD/listener.php";
+	var active=1;
+}
+
 if (active=1) {
 	//SET COUNTERS FOR PARAMATERS PURPOSES AND STRING TO APPEND TO
 	var y = "1";
@@ -52,26 +57,33 @@ if (active=1) {
 	//LET'S LOOP THROUGH THE TABLE
 	for (i=1;i<vTRs.length;i++) {
 	
-		//WAS THERE A PLAYER OR NPC IN THE SLOT? IF NO, SKIP IT!
-		var vPlayer=GetClassItem(vTRs[i],'td','player');
-		if (vPlayer!=null) {
+		//WAS THERE A PLAYER OR NPC IN THE SLOT? IF NO OR SELF, SKIP IT!
+		var vRename=vTRs[i].querySelector(".name .rename");
+		var vPlayer=vTRs[i].querySelector(".player");
+		if (vPlayer!=null && vRename==null) {
 		if (vPlayer.innerHTML.replace(/^\s+|\s+$/g, "").length>0) { 
 						
 			//WHAT SLOT ARE WE IN?
 			var slot=vTRs[i].getAttribute('id').substr(7);
 			
 			//IS IT A HEPH?
-			if (GetClassItem(vTRs[i],'td','name').getElementsByTagName('img')[0] != null) {
+			if (vTRs[i].querySelector(".name").getElementsByTagName('img')[0] != null) {
 				slot+='h'; 
 			}
 						
 			//WHAT IS THE PLANET NAME?
-			var planetName = GetClassItem(vTRs[i],'td','name').textContent.replace(/\((\*|\d{1,2} min)\)/g, "").replace("[ Rename ]", "").trim();
+			if (vTRs[i].querySelector(".name .attackable, .name .not_attackable") !=null) {
+				var planetNameEl = vTRs[i].querySelector(".name .attackable, .name .not_attackable");
+				var planetName = planetNameEl.textContent.trim();
+			} else {
+				var planetNameEl = vTRs[i].querySelector(".name");
+				var planetName = planetNameEl.textContent.trim();
+			}
 		 			
 			//WAS THERE ACTIVITY ON THE PLANET?
 			var planetActivity = "";
-			if (GetClassItem(vTRs[i],'span','activity')!=null) {
-				planetActivity=GetClassItem(vTRs[i],'span','activity').innerHTML;
+			if (vTRs[i].querySelector(".activity")!=null) {
+				planetActivity=vTRs[i].querySelector(".activity").innerHTML;
 			}
 			
 			//WHAT IS THE PLAYER NAME?
@@ -85,26 +97,28 @@ if (active=1) {
 			
 			//WHAT IS THE PLAYER STATUS?
 			var statsymbol='';
-			var vStatus=GetClassItem(vTRs[i],'td','status');
-			if(vStatus.getElementsByClassName("symbols").length > 0) {
-				var statsymbol=vStatus.getElementsByClassName("symbols")[0].textContent;;
+			if(vTRs[i].querySelector(".status .symbols")!=null) {
+				var statsymbol=vTRs[i].querySelector(".symbols").textContent.trim();
 			}
 			
 			//IS THE PLAYER IN AN ALLIANCE? IF SO, WHICH ONE?
 			var alliance='';
-			var vAlliance=GetClassItem(vTRs[i],'td','alliance');
-			var alliance=vAlliance.textContent.trim();
+			if(vTRs[i].querySelector(".alliance .attackable, .alliance .not_attackable")!=null) {
+				var alliance=vTRs[i].querySelector(".alliance .attackable, .alliance .not_attackable").textContent.trim();
+			}
 			
 			//BUILD THE URL STRING AND SPLIT IF TOO LONG
 			var temp = [slot, playername, statsymbol, alliance, rank, planetName, planetActivity];
 			for(var j=0; j<temp.length; ++j){
 				temp[j] = "v"+y+""+j+"="+encodeURIComponent(temp[j]);
 			}
+			
+			temp = temp.join("&");
 						
-			if(temp.length + string1.length < 2000) {
-				string1 += "&" + temp.join("&");
-			} else {
-				string2 += "&" + temp.join("&");	
+			if(temp.length + string1.length < 1900) { //2000 is URL Limit. Set to 1900 to account for the base Path to Upload stuff and other params not included in string building.
+				string1 += "&" + temp;
+				} else {
+				string2 += "&" + temp;
 			}
 		} 
 	}
@@ -113,7 +127,7 @@ if (active=1) {
 	}
 	
 	//LET'S SUBMIT THOSE STRINGS!	
-	if(string2.length === 0){
+	if(string2.length == 0){
 			var urlstring1 = path_to_upload + "?d=1&g=" + galaxy + "&s=" + system + "&t=" + timedate + string1.replace(/,undefined/,"");
 			console.log('uploaded: '+urlstring1);
 	} else {
@@ -141,21 +155,9 @@ if (active=1) {
 			req.open('GET', urlstring1, false);
 			req.open('GET', urlstring2, false);
 		}
-		GetClassItem(document.getElementById('content'),'div','description').innerHTML+=' PARSED.';
+		document.querySelector(".description").innerHTML+=' PARSED.';
 		req.send();
 	} else {    
 		alert('Sorry, your browser does not support XMLHTTPRequest objects.');  
 	}
-}
-
-//HELPER FUNCTION
-function GetClassItem(vSource,vTagname,vClass) {
-	var vElements=vSource.getElementsByTagName(vTagname);
-	var vReturn=null;
-	for (cnt=0;cnt<vElements.length;cnt++) {
-		if (vElements[cnt].getAttribute('class')==vClass) { 
-			vReturn=vElements[cnt]; 
-		} 
-	}
-	return vReturn;
 }
