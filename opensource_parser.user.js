@@ -36,7 +36,6 @@ if (/http:\/\/uni2\.playstarfleetextreme\.com\/galaxy/i.test(document.location.h
 if (active=1) {
 	//SET COUNTERS FOR PARAMATERS PURPOSES AND STRING TO APPEND TO
 	var y = "1";
-	var z = "1";
 	var string1="";
 	var string2="";
 	
@@ -67,7 +66,7 @@ if (active=1) {
 			}
 						
 			//WHAT IS THE PLANET NAME?
-			var planetName = encodeURIComponent(GetClassItem(vTRs[i],'td','name').textContent.replace(/\((\*|\d{1,2} min)\)/g, "").replace("[ Rename ]", "").trim());
+			var planetName = GetClassItem(vTRs[i],'td','name').textContent.replace(/\((\*|\d{1,2} min)\)/g, "").replace("[ Rename ]", "").trim();
 		 			
 			//WAS THERE ACTIVITY ON THE PLANET?
 			var planetActivity = "";
@@ -76,7 +75,7 @@ if (active=1) {
 			}
 			
 			//WHAT IS THE PLAYER NAME?
-			var playername = encodeURIComponent(vPlayer.textContent.replace(/\([viInNd!s]*\)/g, "").replace(/#[\d,]*/g, "").trim());
+			var playername = vPlayer.textContent.replace(/\([viInNd!s]*\)/g, "").replace(/#[\d,]*/g, "").trim();
 			
 			//WHAT IS THE PLAYER RANK?
 			var rank='';
@@ -97,52 +96,30 @@ if (active=1) {
 			var alliance=vAlliance.textContent.trim();
 			
 			//BUILD THE URL STRING AND SPLIT IF TOO LONG
-			if(string1.length < 1500){
-			string1+="&v"+y+""+z+"="+slot+"&";
-			z++;
-			string1+="v"+y+""+z+"="+htmlDecode(playername)+"&";
-			z++;
-			string1+="v"+y+""+z+"="+statsymbol+"&";
-			z++;
-			string1+="v"+y+""+z+"="+htmlDecode(alliance)+"&";
-			z++;
-			string1+="v"+y+""+z+"="+rank+"&";
-			z++;
-			string1+="v"+y+""+z+"="+htmlDecode(planetName)+"&";
-			z++;
-			string1+="v"+y+""+z+"="+planetActivity;
-			} 
-			else {
-			string2+="&v"+y+""+z+"="+slot+"&";
-			z++;
-			string2+="v"+y+""+z+"="+htmlDecode(playername)+"&";
-			z++;
-			string2+="v"+y+""+z+"="+statsymbol+"&";
-			z++;
-			string2+="v"+y+""+z+"="+htmlDecode(alliance)+"&";
-			z++;
-			string2+="v"+y+""+z+"="+rank+"&";
-			z++;
-			string2+="v"+y+""+z+"="+htmlDecode(planetName)+"&";
-			z++;
-			string2+="v"+y+""+z+"="+planetActivity;
+			var temp = [slot, playername, statsymbol, alliance, rank, planetName, planetActivity];
+			for(var j=0; j<temp.length; ++j){
+				temp[j] = "v"+y+""+j+"="+encodeURIComponent(temp[j]);
+			}
+						
+			if(temp.length + string1.length < 2000) {
+				string1 += "&" + temp.join("&");
+			} else {
+				string2 += "&" + temp.join("&");	
 			}
 		} 
 	}
-	//INCREASE AND RESET VARIABLES FOR PARAMETERS
+	//INCREASE VARIABLES FOR NEXT PARAMETERS
 	y++;
-	z="1";
 	}
 	
-	//LET'S SUBMIT THOSE STRINGS!
-	EmailWindowTimeout = 60000;			
-	var urlstring1 = path_to_upload + "?d=1&g=" + galaxy + "&s=" + system + "&t=" +timedate + string1.replace(/,undefined/,"");
-	var urlstring2 = path_to_upload + "?d=0&g=" + galaxy + "&s=" + system + "&t=" +timedate + string2.replace(/,undefined/,"");
-
-	if(string1.length < 1500){
+	//LET'S SUBMIT THOSE STRINGS!	
+	if(string2.length === 0){
+			var urlstring1 = path_to_upload + "?d=1&g=" + galaxy + "&s=" + system + "&t=" + timedate + string1.replace(/,undefined/,"");
 			console.log('uploaded: '+urlstring1);
 	} else {
+			var urlstring1 = path_to_upload + "?d=1&g=" + galaxy + "&s=" + system + "&t=" + timedate + string1.replace(/,undefined/,"");
 			console.log('uploaded: '+urlstring1);
+			var urlstring2 = path_to_upload + "?d=0&g=" + galaxy + "&s=" + system + "&t=" + timedate + string2.replace(/,undefined/,"");
 			console.log('uploaded: '+urlstring2);
 	} 
 
@@ -158,7 +135,7 @@ if (active=1) {
 	}
  
 	if (req) {
-		if(string1.length < 1500){
+		if(string2.length === 0){
 			req.open('GET', urlstring1, false);
 		} else {
 			req.open('GET', urlstring1, false);
@@ -171,7 +148,7 @@ if (active=1) {
 	}
 }
 
-//HELPER FUNCTIONS
+//HELPER FUNCTION
 function GetClassItem(vSource,vTagname,vClass) {
 	var vElements=vSource.getElementsByTagName(vTagname);
 	var vReturn=null;
@@ -181,14 +158,4 @@ function GetClassItem(vSource,vTagname,vClass) {
 		} 
 	}
 	return vReturn;
-}
- 
-function htmlDecode (input) {
-	var entities= {"&amp;": "&","&lt;": "<","&gt;": ">"};
-	for (var prop in entities) {
-		if (entities.hasOwnProperty(prop)) {
-			input = input.replace(new RegExp(prop, "g"), entities[prop]);  
-		} 
-	}
-	return input;
 }
