@@ -1,40 +1,47 @@
 // ==UserScript==
-// @name          OpenSource Galaxy Parser
-// @description   Autoupload every galaxy screen you see. Thanks to Lytjohan and Eljer for letting me base this off their userscripts and Rob for help in writing more compressed code!
+// @name          Open Parser
+// @description   Autoupload every galaxy screen you see in any version of Starfleet Commander or Stardrift Empires!
 // @include       http://*stardriftempires.com/galaxy*
 // @include       http://*playstarfleet.com/galaxy*
 // @include       http://*playstarfleetextreme.com/galaxy*
 // @version       0.0.1
 // ==/UserScript==
+// Thanks to Lytjohan and Eljer for letting me base this off their userscripts and Rob for help me write some of the code!
 
 //SET UPLOAD PATH BASED ON GAME!
-if (/stardrift.+\/galaxy/i.test(document.location.href)) {
+if (/stardrift/i.test(document.location.href)) {
 	var path_to_upload = "http://PATH_TO_UPLOAD/listener.php";
+	var search_path = "http://PATH_TO_SEARCH/search.php";
 	var active=1;
 }
 
-if (/http:\/\/playstarfleet\.com\/galaxy/i.test(document.location.href)) {
+if (/http:\/\/playstarfleet\.com/i.test(document.location.href)) {
 	var path_to_upload = "http://PATH_TO_UPLOAD/listener.php";
+	var search_path = "http://PATH_TO_SEARCH/search.php";
 	var active=1;
 }
 
-if (/http:\/\/uni2\.playstarfleet\.com\/galaxy/i.test(document.location.href)) {
+if (/http:\/\/uni2\.playstarfleet\.com/i.test(document.location.href)) {
 	var path_to_upload = "http://PATH_TO_UPLOAD/listener.php";
+	var search_path = "http://PATH_TO_SEARCH/search.php";
 	var active=1;
 }
 
-if (/http:\/\/playstarfleetextreme\.com\/galaxy/i.test(document.location.href)) {
+if (/http:\/\/playstarfleetextreme\.com/i.test(document.location.href)) {
 	var path_to_upload = "http://PATH_TO_UPLOAD/listener.php";
+	var search_path = "http://PATH_TO_SEARCH/search.php";
 	var active=1;
 }
 
-if (/http:\/\/uni2\.playstarfleetextreme\.com\/galaxy/i.test(document.location.href)) {
+if (/http:\/\/uni2\.playstarfleetextreme\.com/i.test(document.location.href)) {
 	var path_to_upload = "http://PATH_TO_UPLOAD/listener.php";
+	var search_path = "http://PATH_TO_SEARCH/search.php";
 	var active=1;
 }
 
-if (/http:\/\/nova\.playstarfleetextreme\.com\/galaxy/i.test(document.location.href)) {
+if (/http:\/\/nova\.playstarfleetextreme\.com/i.test(document.location.href)) {
 	var path_to_upload = "http://PATH_TO_UPLOAD/listener.php";
+	var search_path = "http://PATH_TO_SEARCH/search.php";
 	var active=1;
 }
 
@@ -43,6 +50,16 @@ if (active=1) {
 	var y = "1";
 	var string1="";
 	var string2="";
+	
+	//WHAT IS OUR CURRENT PLANET SO WE CAN GET BACK HERE
+	var activate_p = document.URL.match(/activate_planet=([0-9]*)/);
+	var current_p = document.URL.match(/current_planet=([0-9]*)/);
+	
+	if (activate_p) {
+		planet_id = activate_p[1];
+	} else if (current_p) {
+		planet_id = current_p[1];
+	}
 	
 	//SET TIME IN UNIX FORMAT
 	var timedate = Math.round(+new Date()/1000);
@@ -87,7 +104,8 @@ if (active=1) {
 			}
 			
 			//WHAT IS THE PLAYER NAME?
-			var playername = vPlayer.textContent.replace(/\([viInNd!s]*\)/g, "").replace(/#[\d,]*/g, "").trim();
+			var playername = vPlayer.textContent.replace(/\([pviInNd!s]*\)/g, "").replace(/#[\d,]*/g, "").trim();
+			vTRs[i].querySelector(".player").innerHTML += "<a href='" + search_path + "?cp=" + planet_id + "&search=p&exact=true&query=" + escape(playername) + "' target='_blank'>O!</a>";
 			
 			//WHAT IS THE PLAYER RANK?
 			var rank='';

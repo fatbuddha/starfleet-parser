@@ -37,9 +37,9 @@ mysql_query("DELETE FROM planets WHERE galaxy='$galaxy' AND system='$system'");
 //BUILD STRINGS AND SUBMIT NEW ENTRIES
 	for ($i = 1; $i <=45; $i++) {
 		$builder = "".$galaxy.", ".$system.", ".$timedate.", ";
-		$j = 1;
+		$j = 0;
 		while (isset($_GET['v'.$i.$j])) {
-			if ($j == 1) { $builder .= '"'; } else { $builder .= ', "'; } 
+			if ($j === 0) { $builder .= '"'; } else { $builder .= ', "'; } 
 			$builder .= mysql_real_escape_string((string)$_GET['v'.$i.$j]).'"';
 			$j++;
 	}

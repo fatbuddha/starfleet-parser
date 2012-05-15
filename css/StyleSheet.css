@@ -1,0 +1,163 @@
+﻿body 
+{
+	font-family:tahoma,Verdana;
+}
+
+a, a:link, a:visited {color:#c41230;text-decoration:none;}
+
+.Container 
+{
+	margin:0 auto;
+	width:900px;
+}
+
+.Logo, .SearchBox
+{
+	margin:0 auto;
+	width:850px;
+}
+
+.SearchContent 
+{
+	width:900px;
+	margin:0 auto;
+}
+
+
+.SearchBox input {font-size:140%; font-family:tahoma,Verdana;}
+
+.inputText { 
+background:url(../images/bgximg.png) #fff repeat-x 0px -511px;
+border:#e3e3e3 1px solid;
+padding:10px;
+width:747px;
+}
+.inputTextBtn 
+{
+background:url(../images/bgximg.png) #fff repeat-x 0px -511px;
+border:#e3e3e3 1px solid;
+padding:10px;
+}
+
+
+
+
+.wtsite-c1 {
+width: 6px;
+background: url('../images/wtsite_shadowleft.png') no-repeat;
+}
+    
+.wtsite-c2 {
+width: 6px;
+background: url('../images/wtsite_shadowright.png') no-repeat;
+}
+    
+.wtsite-tc {
+height: 5px;
+background:url('../images/wtsite_shadowtop.png') repeat-x;
+line-height:5px;
+}
+    
+.wtsite-c1e {
+width: 6px;
+}
+    
+.wtsite-c2e {
+width: 6px;
+}
+    
+.wtsite-tce {
+height: 5px;
+}
+    
+.wtMySite-content 
+{
+    border-left:1px solid white;
+    border-right:1px solid white;
+    padding-left:20px;
+    padding-right:20px;
+    padding-top:10px;
+    font-size:15px;
+}
+
+
+
+.EspReport {padding:15px 20px 15px 20px; font-size:80%; background-color:#f2f2f2; border:1px solid #a5a5a5;}
+.Esp { width:16px; height:16px; line-height:16px; }
+.Esp .EspExist { background:url(../images/Esp.png) right no-repeat; display:block;}
+.Esp .EspNotExist { background:url(../images/noEsp.png) right no-repeat; display:block;}
+
+.AddMoonInfo { background:url(../images/Valid.png) right no-repeat; display:block; }
+
+.HasWarpGate {background:url(../images/warp_icon.png) center no-repeat; display:block;}
+.NoWarpGate {background:url(../images/warp_icon_disabled.png) center no-repeat; display:block;}
+
+.QueryError 
+{
+	padding:10px;
+	background-color:#f2f2f2;
+	border:1px solid #a5a5a5;
+}
+
+.QueryOutput { font-size:80%; }
+.QueryOutput td { padding:5px; }
+
+.Note { font-size:90%; color:Red; }
+
+.Action td { width:33%; text-align:right; }
+.ColonyInvalid a { background:url(../images/NotValid.png) right no-repeat; display:block;}
+.ColonyValid a { background:url(../images/Valid.png) right no-repeat; display:block;}
+
+.Explain { text-align:center; line-height:30px; background-color:#f2f2f2; border:1px solid #a5a5a5; margin:5px 0 5px 0;   font-size:75%; }
+.Explain img { vertical-align:middle;}
+
+
+.Tracker 
+{
+	/* background-color:#a5a5a5; */
+	border:1px solid #a5a5a5;
+	padding:10px;
+}
+
+.TrackerHours 
+{
+	border:1px solid #a5a5a5;
+	background-color:#f2f2f2;
+	text-align:center;
+	font-size:85%;
+}
+
+.TrackerValues 
+{
+	text-align:center;
+	font-size:80%;
+}
+
+.TrackerTitle 
+{
+	font-size:85%;
+}
+
+.TrackerBold 
+{
+	font-weight:bold;
+}
+
+.hephTracking 
+{
+	padding:10px;
+	background-color:#f2f2f2;
+	border:1px solid #a5a5a5;
+}
+
+.hephTracking h1 
+{
+	font-size:80%;
+}
+
+.hephTracking span 
+{
+	font-size:80%;
+}
+
+.Popup a { color:Red !important; }
