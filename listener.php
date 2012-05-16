@@ -1,20 +1,30 @@
 <?php
+//SET PARSER VERSION
+$version = "0.0.1";
 
 //CONNECT TO DATABASE
 include('config.php');
 $con = mysql_connect($host,$user,$pass);
 mysql_select_db($db_name, $con);
+header('Content-Type: text/html; charset=utf-8');
 
 //SET VARIABLES FROM URL
 $galaxy = mysql_real_escape_string($_GET['g']);
 $system = mysql_real_escape_string($_GET['s']);
 $timedate = mysql_real_escape_string($_GET['t']);
 $delete = mysql_real_escape_string($_GET['d']);
+$clientversion = mysql_real_escape_string($_GET['info']);
 
 //SET OTHER VARIABLES WE'll NEED
 date_default_timezone_set('UTC');
 $hour = date("H");
 $hour_ts = date("H")."_ts";
+
+//CHECK PARSER VERSION
+if ($version !== $clientversion) {
+header("Status: 405");
+//header('HTTP/1.1 405 Method Not Allowed', true, 405);
+	} else {
 
 //CHECK IF WE NEED TO UPDATE (Only update if more than 15 minutes since last update)
 $updatecheck = mysql_query("SELECT timeupdated FROM planets WHERE galaxy='$galaxy' AND system='$system' LIMIT 1") or die("Couldn't query last time updated!");
@@ -28,6 +38,7 @@ if (mysql_num_rows($updatecheck) > 0) {
 
 //IF MORE THAN 15 MINUTES PAST LAST UPDATE - LET'S UPDATE!
 if ($doupdate >= 900) {
+header("Status: 200");
 
 //DELETE OLD SYSTEM ENTRIES
 if ($delete = 1){
@@ -103,7 +114,12 @@ $query = mysql_query("SELECT * FROM planets WHERE galaxy='$galaxy' AND system='$
 		}
 	}
 echo "UPDATE END";
+//header('HTTP/1.1 200 OK', true, 200);
 } else { 
+header("Status: 412");
 echo "NO UPDATE NEEDED";
+//header('HTTP/1.1 412 Precondition Failed', true, 412);
+}
+
 }
 ?>

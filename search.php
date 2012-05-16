@@ -3,6 +3,7 @@
 include('config.php'); 
 $con = mysql_connect($host,$user,$pass);
 mysql_select_db($db_name, $con);
+header('Content-Type: text/html; charset=utf-8');
 
 //WHAT UNI IS THIS DATABASE FOR? SET IN CONFIG
 switch($isuni) {
@@ -40,9 +41,11 @@ switch($searchtype) {
 		if ($exactsearch === "true") {
 			$explain = 1;
 			$results = mysql_query("SELECT * FROM planets WHERE alliance='".$searchquery."' ORDER BY player ASC");
+			$resultcount = mysql_num_rows($results);
 		} else { 
 			$explain = 0;
 			$results = mysql_query("SELECT * FROM planets WHERE alliance LIKE '".$searchquery."%' ORDER BY alliance ASC");
+			$resultcount = mysql_num_rows($results);
 		}
 		break;
 	case "p":
@@ -50,14 +53,16 @@ switch($searchtype) {
 			$explain = 0;
 			$results = mysql_query("SELECT * FROM planets WHERE player='".$searchquery."' ORDER BY galaxy ASC, system ASC, slot ASC");
 			$hephdata = mysql_query("SELECT * FROM heph_tracker WHERE player='".$searchquery."' ORDER BY timeupdated DESC");
+			$resultcount = mysql_num_rows($results);
 			$ishephdata = mysql_num_rows($hephdata);
 		} else {
 			$explain = 1;
 			$results = mysql_query("SELECT * FROM planets WHERE player LIKE '".$searchquery."%' ORDER BY 'player' ASC");
+			$resultcount = mysql_num_rows($results);
 		}
 		break;
 	default:
-		$explain = 2;
+		$plainsearch = 1;
 }
 ?>
 
@@ -140,22 +145,48 @@ switch($searchtype) {
 		</tr>
 		<tr>
 			<td class="wtMySite-content">
-			<?php if(isset($results)) {
+			<?php
+			//DO WE NEED TO BUILD A SEARCH BOX? IF YES, DECIDE IF A SEARCH HAD NO RESULT OR IF THIS IS A NEW SEARCH.			
+			if($resultcount === 0 ) {
+				echo '<h1>No results! Try again..</h1>';
+			} elseif($plainsearch === 1) {
+				echo '<h1>Search for..</h1>';
+			}
+			if($resultcount === 0 || $plainsearch === 1) {
+				echo '<div class="SearchBox">
+							<form action="search.php" method="get" onsubmit="return checkFirst(this);">
+							<table>
+								<tbody><tr>
+									<td>
+										<input type="text" class="inputText" title="Search Box" name="query" id="query"><input type="submit" value="Search" class="inputTextBtn">
+										Options: <input type="radio" name="search" value="p" checked>Player or <input type="radio" name="search" value="a">Alliance Tag | <input type="radio" name="exact" value="true" checked>Exact Search or <input type="radio" name="exact" value="false">Search Begins With
+									</td>
+								</tr></tbody>
+							</table>
+							</form>
+						</div>'; 
+			} else {
+			//NO SEARCH BOX WAS NEEDED BECAUSE WE FOUND RESULTS, LET'S DISPLAY THEM!
 				if($searchquery !== ""){echo '<span>Search results for <strong>'.stripslashes($searchquery).'</strong></span>';} ?>
 				<span style="float:right;"><a href="search.php">New search</a></span>
 					<div class="Info">
 					<?php if($explain === 0){ ?>
+						<!--IF AN EXACT SEARCH, SHOW BUTTONS TO EXPAND TRACKING -->
 						<div class="Explain">
 							<span><a href="javascript:void(0);" onclick="showTracker();">Show tracking info</a></span>
 							<span><img src="images/Valid.png" /></span> |
 							<span><a href="javascript:void(0);" onclick="hideTracker();">Hide tracking info</a></span>
-							<span><img src="images/NotValid.png" /></span> |
+							<span><img src="images/NotValid.png" /></span>
+							<?php 
+							//HIDE THE HEPH LINKS IF WE DON'T HAVE ANY HEPH DATA
+							if($ishephdata > 0){echo' |
 							<span><a href="javascript:void(0);" onclick="showHephTracking();">Show <?php if($isuni === 1){echo "Titan";} else {echo "Heph";} ?> tracker</a></span>
 							<span><img src="images/NoEsp.png" /></span> |
 							<span><a href="javascript:void(0);" onclick="hideHephTracking();">Hide <?php if($isuni === 1){echo "Titan";} else {echo "Heph";} ?> tracker</a></span>
-							<span><img src="images/Esp.png" /></span>
+							<span><img src="images/Esp.png" /></span>'; } ?>
 							</div>
 						<?php } elseif($explain === 1){ ?>
+							<!--IF NOT AN EXACT SEARCH, SHOW THE GENERAL INFO BAR -->
 							<div class="Explain">
 								<span>Click on player name to gain additional options and information!</span>
 							</div><?php } ?>							
@@ -166,22 +197,22 @@ switch($searchtype) {
 									<td>Colony</td>
 									<td align="right">Coordinates</td>
 								</tr>
-								<tr>
+								<!-- IF THERE IS NO HEPH DATA, DON'T GENERATE THE HEPH TRACKING BOX! -->
+								<?php if($ishephdata > 0) {
+								echo '<tr>
 									<td colspan="4" id="hephTracker" style="display:none;">
 										<div class="hephTracking">
-										<h1><?php if($isuni === 1){echo "Titan";} else {echo "Heph";} ?> Tracking</h1>
-										<?php
-										if($ishephdata > 0) {
+										<h1>'; if($isuni === 1){echo "Titan";} else {echo "Heph";} echo 'Tracking</h1>';
+																		
 											while($heph = mysql_fetch_assoc($hephdata)){
 											echo "<span>".date("m-d-Y H:i:s A",$heph['timeupdated'])."</span> - <span><a href=".$gameurl."/galaxy/show?current_planet=".$currentplanet."&galaxy=".$heph['galaxy']."&solar_system=".$heph['system'].">[".$heph['galaxy'].":".$heph['system'].":".$heph['slot']."]</a></span><br />";							
 											}
-										} else { echo 'No tracking data available!';}
-										?>
-										</div>
+										echo'</div>
 									</td>
-								</tr>
-						<?php	
-							//MAYBE WE SHOULD LIST ALL THE SEARCH RESULTS
+								</tr>';
+								}
+
+							//LIST ALL THE PLANET RESULTS
 							while($planets = mysql_fetch_assoc($results)){ 
 							echo "
 							<tr>
@@ -205,16 +236,13 @@ switch($searchtype) {
 								<td colspan="4">
 								<table style="overflow-x: visible; overflow-y: visible;" class="Tracker" width="100%" border="0" cellpadding="1" cellspacing="1">
 										<tbody>';
-								//IF IT'S A HEPH, WE DON'T KEEP HOUR BY HOUR TRACKER. SORRY. =(
+								//IF IT'S A HEPH, WE DON'T KEEP HOUR BY HOUR TRACKER DATA. SORRY. =(
 								if(preg_match('[h]', $planets['slot'])) { 
 										if($ishephdata > 0) {
 												echo '<tr><td class="TrackerHours"><div align="center">Please use the ';
 												if($isuni === 1){echo "Titan";} else {echo "Heph";}
 												echo ' tracker link to see recent locations!</td></tr>';
-												
-											} else { 
-												echo '<tr><td class="TrackerHours">No tracking data available!</td></tr>';
-											}
+											} 
 									$z++;
 								} else {
 								
@@ -277,20 +305,7 @@ switch($searchtype) {
 							echo' </td></tr></tbody></table>';
 							}
 							}
-						} else { echo '
-						
-						<div class="SearchBox">
-							<form action="search.php" method="get" onsubmit="return checkFirst(this);">
-							<table>
-								<tbody><tr>
-									<td>
-										<input type="text" class="inputText" title="Search Box" name="query" id="query"><input type="submit" value="Search" class="inputTextBtn">
-										Options: <input type="radio" name="search" value="p" checked>Player or <input type="radio" name="search" value="a">Alliance | <input type="radio" name="exact" value="true" checked>Exact Search or <input type="radio" name="exact" value="false">Fuzzy Search
-									</td>
-								</tr></tbody>
-							</table>
-							</form>
-						</div>'; }
+						} 
 						?>	
 															
 		</td>

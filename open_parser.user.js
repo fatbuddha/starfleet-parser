@@ -6,7 +6,10 @@
 // @include       http://*playstarfleetextreme.com/galaxy*
 // @version       0.0.1
 // ==/UserScript==
-// Thanks to Lytjohan and Eljer for letting me base this off their userscripts and Rob for help me write some of the code!
+// Thanks to Lytjohan and Eljer for letting me base this off their userscripts and Rob for help in writing more compressed code!
+
+//VERSION INFO
+var version = "0.0.1";
 
 //SET UPLOAD PATH BASED ON GAME!
 if (/stardrift/i.test(document.location.href)) {
@@ -39,7 +42,7 @@ if (/http:\/\/uni2\.playstarfleetextreme\.com/i.test(document.location.href)) {
 	var active=1;
 }
 
-if (/http:\/\/nova\.playstarfleetextreme\.com/i.test(document.location.href)) {
+if (/http:\/\/nova\.playstarfleet\.com/i.test(document.location.href)) {
 	var path_to_upload = "http://PATH_TO_UPLOAD/listener.php";
 	var search_path = "http://PATH_TO_SEARCH/search.php";
 	var active=1;
@@ -76,7 +79,7 @@ if (active=1) {
 	
 		//WAS THERE A PLAYER OR NPC IN THE SLOT? IF NO OR SELF, SKIP IT!
 		var vRename=vTRs[i].querySelector(".name .rename");
-		var vPlayer=vTRs[i].querySelector(".player");
+		var vPlayer=vTRs[i].querySelector(".player .not_attackable, .player .attackable");
 		if (vPlayer!=null && vRename==null) {
 		if (vPlayer.innerHTML.replace(/^\s+|\s+$/g, "").length>0) { 
 						
@@ -146,12 +149,12 @@ if (active=1) {
 	
 	//LET'S SUBMIT THOSE STRINGS!	
 	if(string2.length == 0){
-			var urlstring1 = path_to_upload + "?d=1&g=" + galaxy + "&s=" + system + "&t=" + timedate + string1.replace(/,undefined/,"");
+			var urlstring1 = path_to_upload + "?info=" + version + "&d=1&g=" + galaxy + "&s=" + system + "&t=" + timedate + string1.replace(/,undefined/,"");
 			console.log('uploaded: '+urlstring1);
 	} else {
-			var urlstring1 = path_to_upload + "?d=1&g=" + galaxy + "&s=" + system + "&t=" + timedate + string1.replace(/,undefined/,"");
+			var urlstring1 = path_to_upload + "?info=" + version + "&d=1&g=" + galaxy + "&s=" + system + "&t=" + timedate + string1.replace(/,undefined/,"");
 			console.log('uploaded: '+urlstring1);
-			var urlstring2 = path_to_upload + "?d=0&g=" + galaxy + "&s=" + system + "&t=" + timedate + string2.replace(/,undefined/,"");
+			var urlstring2 = path_to_upload + "?info=" + version + "&d=0&g=" + galaxy + "&s=" + system + "&t=" + timedate + string2.replace(/,undefined/,"");
 			console.log('uploaded: '+urlstring2);
 	} 
 
@@ -173,9 +176,34 @@ if (active=1) {
 			req.open('GET', urlstring1, false);
 			req.open('GET', urlstring2, false);
 		}
-		document.querySelector(".description").innerHTML+=' PARSED.';
+		//LET'S FIGURE OUT IF WE SUBMITTED SUCCESSFULLY
+		req.onload = function () {
+			if (req.status == 200) {
+				document.querySelector(".colonized_planets").innerHTML+=" - Open Parser: <span style='color: rgb(10, 255, 10);'>PARSED</span>.";
+			} else if (req.status == 405) {
+				showAdvisory("http://PATH_TO_FILE/open_parser.user.js", "<br />Open Parser Update Required. Click here to update now.");
+			} else if (req.status == 412) {
+				document.querySelector(".colonized_planets").innerHTML+=" - Open Parser: <span style='color: blue;'>PARSED</span>.";
+			}
+		}
 		req.send();
 	} else {    
-		alert('Sorry, your browser does not support XMLHTTPRequest objects.');  
+		document.querySelector(".colonized_planets").innerHTML+=" - Open Parser: <span style='color: red;'>ERROR</span>.";  
 	}
+}
+
+//CREATE WARNING BOX IF NEEDED
+function showAdvisory(url, title) {
+	var el = document.getElementById("sticky_notices");
+	var div = document.createElement("div");
+	var span = document.createElement("span");
+	var a = document.createElement("a");
+	div.setAttribute("class", "notice");
+	span.setAttribute("class", "notice_icon");
+	div.appendChild(span);
+	a.setAttribute("href", url);
+	a.innerHTML = title;
+	div.appendChild(a);
+	el.appendChild(div);
+
 }
