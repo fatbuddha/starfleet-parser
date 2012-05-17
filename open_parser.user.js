@@ -8,47 +8,25 @@
 // ==/UserScript==
 // Thanks to Lytjohan and Eljer for letting me base this off their userscripts and Rob for help in writing more compressed code!
 
-//VERSION INFO
-var version = "0.0.1";
+(function(){
 
-//SET UPLOAD PATH BASED ON GAME!
-if (/stardrift/i.test(document.location.href)) {
-	var path_to_upload = "http://PATH_TO_UPLOAD/listener.php";
-	var search_path = "http://PATH_TO_SEARCH/search.php";
-	var active=1;
-}
-
-if (/http:\/\/playstarfleet\.com/i.test(document.location.href)) {
-	var path_to_upload = "http://PATH_TO_UPLOAD/listener.php";
-	var search_path = "http://PATH_TO_SEARCH/search.php";
-	var active=1;
-}
-
-if (/http:\/\/uni2\.playstarfleet\.com/i.test(document.location.href)) {
-	var path_to_upload = "http://PATH_TO_UPLOAD/listener.php";
-	var search_path = "http://PATH_TO_SEARCH/search.php";
-	var active=1;
-}
-
-if (/http:\/\/playstarfleetextreme\.com/i.test(document.location.href)) {
-	var path_to_upload = "http://PATH_TO_UPLOAD/listener.php";
-	var search_path = "http://PATH_TO_SEARCH/search.php";
-	var active=1;
-}
-
-if (/http:\/\/uni2\.playstarfleetextreme\.com/i.test(document.location.href)) {
-	var path_to_upload = "http://PATH_TO_UPLOAD/listener.php";
-	var search_path = "http://PATH_TO_SEARCH/search.php";
-	var active=1;
-}
-
-if (/http:\/\/nova\.playstarfleet\.com/i.test(document.location.href)) {
-	var path_to_upload = "http://PATH_TO_UPLOAD/listener.php";
-	var search_path = "http://PATH_TO_SEARCH/search.php";
-	var active=1;
-}
-
-if (active=1) {
+	//VERSION INFO
+	var version = "0.0.1";
+	
+	//SET UPLOAD PATH BASED ON GAME!
+	var servers = {
+		"stardriftempires.com":"PATH_TO_SERVER",
+		"playstarfleet.com":"PATH_TO_SERVER",
+		"uni2.playstarfleet.com":"PATH_TO_SERVER",
+		"playstarfleetextreme.com":"PATH_TO_SERVER",
+		"uni2.playstarfleetextreme.com":"PATH_TO_SERVER",
+		"nova.playstarfleetextreme.com":"PATH_TO_SERVER"
+	};
+	var domain = servers[window.location.hostname];
+	if(!domain)return;
+	var path_to_upload = "http://"+domain+"/listener.php";
+	var search_path = "http://"+domain+"/search.php";
+	
 	//SET COUNTERS FOR PARAMATERS PURPOSES AND STRING TO APPEND TO
 	var y = "1";
 	var string1="";
@@ -190,20 +168,21 @@ if (active=1) {
 	} else {    
 		document.querySelector(".colonized_planets").innerHTML+=" - Open Parser: <span style='color: red;'>ERROR</span>.";  
 	}
-}
 
-//CREATE WARNING BOX IF NEEDED
-function showAdvisory(url, title) {
-	var el = document.getElementById("sticky_notices");
-	var div = document.createElement("div");
-	var span = document.createElement("span");
-	var a = document.createElement("a");
-	div.setAttribute("class", "notice");
-	span.setAttribute("class", "notice_icon");
-	div.appendChild(span);
-	a.setAttribute("href", url);
-	a.innerHTML = title;
-	div.appendChild(a);
-	el.appendChild(div);
+	//CREATE WARNING BOX IF NEEDED
+	function showAdvisory(url, title) {
+		var el = document.getElementById("sticky_notices");
+		var div = document.createElement("div");
+		var span = document.createElement("span");
+		var a = document.createElement("a");
+		div.setAttribute("class", "notice");
+		span.setAttribute("class", "notice_icon");
+		div.appendChild(span);
+		a.setAttribute("href", url);
+		a.innerHTML = title;
+		div.appendChild(a);
+		el.appendChild(div);
+	
+	}
 
-}
+})();
